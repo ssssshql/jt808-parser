@@ -20,7 +20,7 @@ export function InputPanel({ value, onChange }: InputPanelProps) {
           onChange={(e) => onChange(e.target.value)}
           spellCheck={false}
           placeholder="7E 02 00 00 ... 7E"
-          className="peer block h-[92px] w-full resize-none rounded-[4px] border border-outline bg-transparent px-4 py-3 font-mono text-[13px] leading-5 text-on-surface placeholder:text-on-surface-variant/60 focus:border-2 focus:border-primary focus:px-[15px] focus:py-[11px] focus:outline-none" />
+          className="m3-scroll peer block h-[92px] w-full resize-none rounded-[4px] border border-outline bg-transparent px-4 py-3 font-mono text-[13px] leading-5 text-on-surface placeholder:text-on-surface-variant/60 focus:border-2 focus:border-primary focus:px-[15px] focus:py-[11px] focus:outline-none" />
         
         <label
           htmlFor="frame-input"
