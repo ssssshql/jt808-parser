@@ -96,7 +96,9 @@ function genField(f: SpecField, ctx: SpecCtx): number[] {
     case 'location':
       return f.basic ? [...LOC_BASIC] : [...LOC_BASIC, ...LOC_EXTRAS];
     case 'alarmId':
-      return [...fit(ascii('1234567'), ctx.version === '2019' ? 30 : 7), ...TIME, 0x00, 0x01, 0x00];
+      return ctx.version === '2019' ?
+      [...fit(ascii('1234567'), 30), ...TIME, 0x00, 0x01, 0x00, 0x00] :
+      [...fit(ascii('1234567'), 7), ...TIME, 0x00, 0x01, 0x00];
     case 'params':{
         const count = ctx.values[f.countRef] ?? 0;
         const out: number[] = [];

@@ -1,16 +1,25 @@
 import type { Field, ProtocolVersion } from '../../types/jt808';
 import { MSG_NAMES, SPEC_BY_ID } from '../../data/messages';
 import {
-  FILE_TYPES, PLATE_COLORS, PLATFORM_RESULT, PROVINCES, REGISTER_RESULT, TERMINAL_RESULT } from
+  FILE_TYPES, PLATE_COLORS, PLATFORM_RESULT, PROVINCES, REGISTER_RESULT, SAFETY_STANDARD_NAME, TERMINAL_RESULT,
+  defaultStandard } from
 './dictionaries';
 import { parseBySpec } from './specParser';
 import { formatSize, hexN } from './hex';
 import { parseLocation } from './location';
 import { Reader, errorField, group } from './reader';
-import { parseAlarmIdentifier } from './safety';
+import { ALARM_ID_LAYOUT, detectStandard, parseAlarmIdentifier } from './safety';
+
+/** 0x1210：终端 ID + 标识号之后为 报警编号[32] + 信息类型 + 附件数量 + 附件列表，检查列表能否正好走到末尾 */
+function attachmentListFits(r: Reader, after: number): boolean {
+  if (after < 34) return false;
+  let p = r.end - after + 33;
+  const count = r.buf[p++];
+  for (let i = 0; i < count && p < r.end; i++) p += 1 + r.buf[p] + 4;
+  return p === r.end;
+}
 
 export function parseBody(r: Reader, msgId: number, version: ProtocolVersion, out: Field[]): void {
-  const termLen = version === '2019' ? 30 : 7;
   switch (msgId) {
     case 0x0001:
     case 0x8001:{
@@ -58,14 +67,18 @@ export function parseBody(r: Reader, msgId: number, version: ProtocolVersion, ou
         out.push(r.str('服务器 IP 地址', l.num ?? 0));
         out.push(r.uint('TCP 端口', 2));
         out.push(r.uint('UDP 端口', 2));
-        out.push(parseAlarmIdentifier(r, version, false, termLen));
+        // 苏标表 4-21 / 粤标表 5-21：标识号之后为 报警编号[32] + 预留[16]
+        const match = detectStandard(r, version, () => 0, (_s, after) => after === 48);
+        out.push(parseAlarmIdentifier(r, match));
         out.push(r.str('报警编号', 32));
         out.push(r.bytes('预留', 16, '16 字节保留'));
         return;
       }
     case 0x1210:{
-        out.push(r.str('终端 ID', termLen));
-        out.push(parseAlarmIdentifier(r, version, false, termLen));
+        // 苏标表 4-23：终端 ID[7]；粤标表 5-23：终端 ID[30]，与报警标识号内的终端 ID 等长
+        const match = detectStandard(r, version, (s) => ALARM_ID_LAYOUT[s].termId, (_s, after) => attachmentListFits(r, after));
+        out.push(r.str('终端 ID', ALARM_ID_LAYOUT[match.standard].termId));
+        out.push(parseAlarmIdentifier(r, match));
         out.push(r.str('报警编号', 32));
         out.push(r.uint('信息类型', 1, (v) => ({ value: v === 0 ? '正常报警文件信息' : v === 1 ? '补传报警文件信息' : `未知 (${v})` })));
         const cnt = r.uint('附件数量', 1, (v) => ({ value: `${v} 个` }));
@@ -84,7 +97,11 @@ export function parseBody(r: Reader, msgId: number, version: ProtocolVersion, ou
         const nl = r.uint('文件名称长度', 1, (v) => ({ value: `${v} 字节` }));
         out.push(nl);
         out.push(r.str('文件名称', nl.num ?? 0));
-        out.push(r.uint('文件类型', 1, (v) => ({ value: FILE_TYPES[v] ?? `未知 (${v})` })));
+        const std = defaultStandard(version);
+        out.push(r.uint('文件类型', 1, (v) => ({
+          value: FILE_TYPES[std][v] ?? `未知 (${v})`,
+          steps: [`消息内无报警标识号，按 JT/T 808-${version} 取${SAFETY_STANDARD_NAME[std]}的文件类型定义`]
+        })));
         out.push(r.uint('文件大小', 4, (v) => ({ value: formatSize(v) })));
         return;
       }

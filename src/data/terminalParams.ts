@@ -6,6 +6,7 @@ export interface TerminalParam {
   type: 'BYTE' | 'WORD' | 'DWORD' | 'STRING' | 'BYTES';
   unit?: string;
   versions?: ProtocolVersion[];
+  desc?: string;
 }
 
 export const TERMINAL_PARAMS: TerminalParam[] = [
@@ -70,8 +71,8 @@ export const TERMINAL_PARAMS: TerminalParam[] = [
 { id: 0x005a, name: '最长停车时间', type: 'DWORD', unit: 's' },
 { id: 0x005b, name: '超速预警差值', type: 'WORD', unit: '1/10 km/h' },
 { id: 0x005c, name: '疲劳驾驶预警差值', type: 'WORD', unit: 's' },
-{ id: 0x005d, name: '碰撞报警参数设置', type: 'WORD' },
-{ id: 0x005e, name: '侧翻报警参数设置', type: 'WORD', unit: '°' },
+{ id: 0x005d, name: '碰撞报警参数设置', type: 'WORD', desc: 'b7–b0 碰撞时间，单位 4 ms；b15–b8 碰撞加速度，单位 0.1 g，范围 0–79，默认 10' },
+{ id: 0x005e, name: '侧翻报警参数设置', type: 'WORD', unit: '°', desc: '侧翻角度，单位 1 度，默认 30 度' },
 { id: 0x0064, name: '定时拍照控制', type: 'DWORD' },
 { id: 0x0065, name: '定距拍照控制', type: 'DWORD' },
 { id: 0x0070, name: '图像/视频质量', type: 'DWORD' },
@@ -102,11 +103,11 @@ export const TERMINAL_PARAMS: TerminalParam[] = [
 { id: 0x0102, name: 'CAN 总线通道 2 采集时间间隔', type: 'DWORD', unit: 'ms' },
 { id: 0x0103, name: 'CAN 总线通道 2 上传时间间隔', type: 'WORD', unit: 's' },
 { id: 0x0110, name: 'CAN 总线 ID 单独采集设置', type: 'BYTES' },
-{ id: 0xf364, name: '高级驾驶辅助系统参数（粤标）', type: 'BYTES' },
-{ id: 0xf365, name: '驾驶员状态监测系统参数（粤标）', type: 'BYTES' },
-{ id: 0xf366, name: '胎压监测系统参数（粤标）', type: 'BYTES' },
-{ id: 0xf367, name: '盲区监测系统参数（粤标）', type: 'BYTES' },
-{ id: 0xf370, name: '激烈驾驶报警参数（粤标）', type: 'BYTES' }];
+{ id: 0xf364, name: '高级驾驶辅助系统参数', type: 'BYTES', desc: '苏标表 4-10 / 粤标表 5-10，两者子参数结构不同' },
+{ id: 0xf365, name: '驾驶员状态监测系统参数', type: 'BYTES', desc: '苏标表 4-11 / 粤标表 5-11，两者子参数结构不同' },
+{ id: 0xf366, name: '胎压监测系统参数', type: 'BYTES', desc: '苏标表 4-12 / 粤标表 5-12，两者子参数结构不同' },
+{ id: 0xf367, name: '盲区监测系统参数', type: 'BYTES', desc: '苏标表 4-13 / 粤标表 5-13，两者子参数结构不同' },
+{ id: 0xf370, name: '智能视频协议版本信息（粤标）', type: 'BYTE', desc: '粤标表 5-9：初始版本为 1，每次修订递增；只支持获取，不支持设置' }];
 
 
 export const PARAM_NAMES: Record<number, string> = Object.fromEntries(TERMINAL_PARAMS.map((p) => [p.id, p.name]));

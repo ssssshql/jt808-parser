@@ -1,10 +1,10 @@
 import type { Field, ProtocolVersion, Section } from '../../types/jt808';
 import {
-  AREA_TYPES, EXTRA_NAMES, EXT_SIGNAL_DEFS, IO_DEFS, SAFETY_EXTRA_IDS, STATUS_DEFS, alarmDefs, heading } from
+  AREA_TYPES, EXTRA_NAMES, EXTRA_SINCE, EXT_SIGNAL_DEFS, IO_DEFS, SAFETY_EXTRA_IDS, alarmDefs, heading, statusDefs } from
 './dictionaries';
 import { hexN } from './hex';
 import { Reader, bitsFrom, errorField, group, type Interpretation } from './reader';
-import { parseAdas, parseAggressive, parseBsd, parseDsm, parseTpms } from './safety';
+import { parseAdas, parseBsd, parseDsm, parseTpms } from './safety';
 
 function coord(v: number, flag: number, bit: number, pos: string, neg: string): Interpretation {
   const deg = (v / 1e6).toFixed(6);
@@ -32,7 +32,7 @@ export function parseLocation(r: Reader, version: ProtocolVersion, out: Field[])
     })
   );
   const status = r.uint('状态', 4, (v) => {
-    const bits = bitsFrom(v, STATUS_DEFS);
+    const bits = bitsFrom(v, statusDefs(version));
     const sys = bits.filter((b) => ['GPS', '北斗', 'GLONASS', 'Galileo'].includes(b.name) && b.active).map((b) => b.name);
     const acc = bits[0].value;
     const fix = bits[1].value;
@@ -87,11 +87,16 @@ function parseExtra(r: Reader, version: ProtocolVersion): Field {
     }
     children.push(...content);
   }
-  return group(r.buf, `${hexN(idv, 1)} ${name}`, start, children, summary, section, [
+  const steps = [
   '附加信息采用 ID(1 字节) + 长度(1 字节) + 内容 的 TLV 结构',
   `ID = ${hexN(idv, 1)}（${name}），内容长度 = ${len} 字节`,
-  `内容解析结果：${summary}`]
-  );
+  `内容解析结果：${summary}`];
+
+  const since = EXTRA_SINCE[idv];
+  if (since && Number(version) < Number(since)) {
+    steps.push(`注意：JT/T 808-${version} 中该 ID 为保留，按 ${since} 版定义解析`);
+  }
+  return group(r.buf, `${hexN(idv, 1)} ${name}`, start, children, summary, section, steps);
 }
 
 function parseExtraContent(r: Reader, id: number, len: number, version: ProtocolVersion, out: Field[]): string {
@@ -107,7 +112,7 @@ function parseExtraContent(r: Reader, id: number, len: number, version: Protocol
     case 0x03:
       return push(r.uint('行驶记录速度', 2, scaled('km/h', 10, '速度')));
     case 0x04:
-      return push(r.uint('报警事件 ID', 2));
+      return push(r.uint('报警事件 ID', 2, () => ({ steps: ['需要人工确认报警事件的 ID，从 1 开始计数'] })));
     case 0x05:{
         const f = r.bytes('胎压', len);
         const vals = Array.from(r.buf.subarray(f.offset, f.offset + len)).
@@ -121,8 +126,13 @@ function parseExtraContent(r: Reader, id: number, len: number, version: Protocol
       return push(r.uint('后续自定义信息长度', 1, (v) => ({ value: `${v} 字节` })));
     case 0x06:
       return push(r.uint('车厢温度', 2, (v) => {
-        const t = v > 0x7fff ? v - 0x10000 : v;
-        return { value: `${t} ℃`, steps: [`按有符号 16 位整数解释 → ${t} ℃`] };
+        // 2019 表 27：取值 -32767～+32767，最高位为 1 表示负数（符号位 + 绝对值，不是补码）
+        const mag = v & 0x7fff;
+        const t = v & 0x8000 ? -mag : mag;
+        return {
+          value: `${t} ℃`,
+          steps: [`最高位 bit15 = ${v >> 15}（${v & 0x8000 ? '负' : '正'}），低 15 位 = ${mag}`, `→ ${t} ℃`]
+        };
       }));
     case 0x11:{
         const t = r.uint('位置类型', 1, (v) => ({ value: AREA_TYPES[v] ?? `未知 (${v})` }));
@@ -176,8 +186,12 @@ function parseExtraContent(r: Reader, id: number, len: number, version: Protocol
       return parseTpms(r, out, version);
     case 0x67:
       return parseBsd(r, out, version);
-    case 0x70:
-      return parseAggressive(r, out, version);
+    case 0xf1:
+    case 0xf2:
+      return push(r.uint(id === 0xf1 ? '安装异常信息' : '算法异常信息', 4, (v) => ({
+        value: hexN(v, 4),
+        steps: ['粤标表 5-14：DWORD，含义由厂家自定义']
+      })));
     default:
       return push(r.bytes('附加信息内容', len, `${len} 字节自定义数据`));
   }

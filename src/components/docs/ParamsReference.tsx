@@ -57,7 +57,10 @@ export function ParamsReference({ version }: ParamsReferenceProps) {
                     className={`grid grid-cols-[80px_minmax(220px,1fr)_80px_120px_100px] gap-3 border-b border-outline-variant/60 px-4 py-1.5 last:border-b-0 ${available ? '' : 'opacity-50'}`}>
                     
                     <span className="font-mono">{hexN(p.id, 2)}</span>
-                    <span className="text-on-surface">{p.name}</span>
+                    <span className="text-on-surface">
+                      {p.name}
+                      {p.desc && <span className="mt-0.5 block text-xs text-on-surface-variant">{p.desc}</span>}
+                    </span>
                     <span className="font-mono text-[12px]">{p.type}</span>
                     <span className="text-on-surface-variant">{p.unit ?? '—'}</span>
                     <span className="text-on-surface-variant">{p.versions ? p.versions.join(' / ') : '全部'}</span>

@@ -11,10 +11,10 @@ export type Category =
 '行驶记录与驾驶员' |
 '多媒体' |
 '数据透传与加密' |
-'主动安全（粤标）' |
+'主动安全（苏标/粤标）' |
 '音视频（JT/T 1078）';
 
-export type Standard = 'JT/T 808' | 'JT/T 1078' | '粤标主动安全';
+export type Standard = 'JT/T 808' | 'JT/T 1078' | '苏标/粤标主动安全';
 
 export type DocRefKey = 'frame' | 'bits' | 'extras' | 'safety' | 'params';
 

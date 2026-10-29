@@ -40,7 +40,7 @@ export function fixedLength(f: SpecField, version: ProtocolVersion): number | nu
     case 'location':
       return f.basic ? 28 : null;
     case 'alarmId':
-      return version === '2019' ? 39 : 16;
+      return version === '2019' ? 40 : 16;
     default:
       return null;
   }
@@ -181,7 +181,9 @@ export function versionDiffs(spec: MessageSpec): string[] {
         out.push(`「${f.name}」长度：${entries.map(([v, n]) => `${v} 为 ${n} 字节`).join('，')}`);
       }
     }
-    if (f.kind === 'alarmId') out.push(`「${f.name}」中终端 ID：2011/2013 为 7 字节，2019 为 30 字节`);
+    if (f.kind === 'alarmId') {
+      out.push(`「${f.name}」：苏标（2011/2013）16 字节，终端 ID 7 + 预留 1；粤标（2019）40 字节，终端 ID 30 + 预留 2`);
+    }
     if (f.kind === 'list') walkDiff(f.item);
   });
   walkDiff(spec.fields);

@@ -15,7 +15,7 @@ interface SafetyReferenceProps {
 }
 
 const FLOW: {id: number;text: string;}[] = [
-{ id: 0x0200, text: '终端在位置汇报中携带 0x64–0x67、0x70 主动安全附加信息，报警标识号中声明附件数量' },
+{ id: 0x0200, text: '终端在位置汇报中携带 0x64–0x67 主动安全附加信息，报警标识号中声明附件数量' },
 { id: 0x9208, text: '平台下发附件服务器地址与报警编号' },
 { id: 0x1210, text: '终端连接附件服务器，上报附件文件列表' },
 { id: 0x1211, text: '每个文件上传前发送文件信息' },
@@ -27,9 +27,9 @@ export function SafetyReference({ version, onNavigate }: SafetyReferenceProps) {
   return (
     <div>
       <DocHeader
-        eyebrow="协议参考 · 粤标主动安全"
+        eyebrow="协议参考 · 苏标 / 粤标主动安全"
         title="主动安全附加信息"
-        desc="依据广东省道路运输车辆主动安全智能防控系统通讯协议（粤标），主动安全报警通过位置汇报附加信息 0x64 ADAS、0x65 DSM、0x66 TPMS、0x67 BSD 及 0x70 激烈驾驶上报。报警标识号中的终端 ID 在 2011/2013 版为 7 字节，2019 版为 30 字节，解析器按剩余长度自动识别。" />
+        desc="主动安全报警通过位置汇报附加信息 0x64 ADAS、0x65 DSM、0x66 TPMS、0x67 BSD 上报。苏标 T/JSATL 12-2017 基于 JT/T 808-2011，报警标识号 16 字节（终端 ID 7 + 预留 1）；粤标 T/GDRTA 002-2020 基于 JT/T 808-2019，报警标识号 40 字节（终端 ID 30 + 预留 2），并扩展了 ADAS/DSM 报警类型，胎压报警位置为 BYTE[2]。解析器用终端 ID 之后的 BCD 时间与报文长度判断标准，判断不了时 2011/2013 按苏标、2019 按粤标。本页按所选协议版本展示对应标准。" />
       
       <div className="space-y-8 px-6 py-6">
         <DocSection title="报警附件上传流程">
@@ -51,7 +51,7 @@ export function SafetyReference({ version, onNavigate }: SafetyReferenceProps) {
         </DocSection>
 
         {SAFETY_EXTRA_SPECS.map((s) =>
-        <DocSection key={s.id} title={`${hexN(s.id, 1)} ${s.name}`} aside={`JT/T 808-${version}`}>
+        <DocSection key={s.id} title={`${hexN(s.id, 1)} ${s.name}`} aside={version === '2019' ? '粤标 T/GDRTA 002-2020' : '苏标 T/JSATL 12-2017'}>
             <p className="mb-3 text-sm text-on-surface-variant">{s.desc}</p>
             <SpecTable rows={buildDocRows(s.fields, version)} onNavigate={(k: DocRefKey) => onNavigate(k)} />
           </DocSection>
