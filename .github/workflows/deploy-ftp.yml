@@ -1,0 +1,41 @@
+name: Deploy to FTP Server
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ftp-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm install
+
+      - run: npm run build
+
+      - name: Upload dist to FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: 21
+          protocol: ftp
+          local-dir: ./dist/
+          # 站点根目录；未配置 Secret 时默认上传到 FTP 根目录
+          server-dir: ${{ secrets.FTP_SERVER_DIR || '/' }}
+          # true = 上传前清空 server-dir（彻底覆盖，旧文件不留）
+          # 只在你确认 server-dir 就是站点目录时再打开
+          dangerous-clean-slate: false
+          log-level: standard

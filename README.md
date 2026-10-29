@@ -43,7 +43,22 @@ npm run build
 
 > 首次使用需在仓库 Settings → Pages 中将 Source 设置为 **GitHub Actions**。
 
-### 自有服务器（nginx）
+### 自有服务器：FTP 自动部署
+
+推送到 `main` 后，`deploy-ftp.yml` 会自动构建并把 `dist` 同步到 FTP 站点目录。
+
+在仓库 **Settings → Secrets and variables → Actions → New repository secret** 添加：
+
+| Secret | 值 | 说明 |
+| --- | --- | --- |
+| `FTP_SERVER` | `158.101.4.164` | FTP 主机 |
+| `FTP_USERNAME` | FTP 账号 | |
+| `FTP_PASSWORD` | FTP 密码 | |
+| `FTP_SERVER_DIR` | `/www/wwwroot/jt808/` | 站点根目录，不填默认为 `/` |
+
+> `dangerous-clean-slate` 默认关闭，同名文件会被覆盖、旧文件保留。若要完全清空重传，把它改为 `true`（确认 `FTP_SERVER_DIR` 就是站点目录后再开）。
+
+### 自有服务器：手动上传
 
 ```bash
 npm run build
