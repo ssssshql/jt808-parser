@@ -150,12 +150,18 @@ export class Reader {
 
   str(name: string, n: number, enc: 'ascii' | 'gbk' = 'ascii'): Field {
     const start = this.claim(name, n);
+    // 终端 ID 等字段常右对齐（前补 0x00）或左对齐（后补 0x00），两侧填充都去掉再解码
+    let s = start;
     let e = start + n;
-    while (e > start && this.buf[e - 1] === 0x00) e--;
-    const pad = start + n - e;
-    const text = decodeText(this.buf.subarray(start, e), enc);
+    while (e > s && this.buf[e - 1] === 0x00) e--;
+    while (s < e && this.buf[s] === 0x00) s++;
+    const lead = s - start;
+    const trail = start + n - e;
+    const text = decodeText(this.buf.subarray(s, e), enc);
     const steps = [`读取 ${n} 字节（偏移 ${hexN(start)} 起）`];
-    if (pad > 0) steps.push(`去除末尾 ${pad} 字节 0x00 填充，有效内容 ${n - pad} 字节`);
+    if (lead || trail) {
+      steps.push(`去除填充：前 ${lead} 字节、后 ${trail} 字节 0x00，有效内容 ${n - lead - trail} 字节`);
+    }
     steps.push(`按 ${enc === 'gbk' ? 'GBK' : 'ASCII'} 解码 → "${text}"`);
     return makeField(this.buf, {
       name,

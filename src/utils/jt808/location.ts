@@ -169,15 +169,15 @@ function parseExtraContent(r: Reader, id: number, len: number, version: Protocol
     case 0x31:
       return push(r.uint('卫星数', 1, (v) => ({ value: `${v} 颗` })));
     case 0x64:
-      return parseAdas(r, out);
+      return parseAdas(r, out, version);
     case 0x65:
-      return parseDsm(r, out);
+      return parseDsm(r, out, version);
     case 0x66:
       return parseTpms(r, out, version);
     case 0x67:
-      return parseBsd(r, out);
+      return parseBsd(r, out, version);
     case 0x70:
-      return parseAggressive(r, out);
+      return parseAggressive(r, out, version);
     default:
       return push(r.bytes('附加信息内容', len, `${len} 字节自定义数据`));
   }

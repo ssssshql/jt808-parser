@@ -58,14 +58,14 @@ export function parseBody(r: Reader, msgId: number, version: ProtocolVersion, ou
         out.push(r.str('服务器 IP 地址', l.num ?? 0));
         out.push(r.uint('TCP 端口', 2));
         out.push(r.uint('UDP 端口', 2));
-        out.push(parseAlarmIdentifier(r, termLen));
+        out.push(parseAlarmIdentifier(r, version, false, termLen));
         out.push(r.str('报警编号', 32));
         out.push(r.bytes('预留', 16, '16 字节保留'));
         return;
       }
     case 0x1210:{
         out.push(r.str('终端 ID', termLen));
-        out.push(parseAlarmIdentifier(r, termLen));
+        out.push(parseAlarmIdentifier(r, version, false, termLen));
         out.push(r.str('报警编号', 32));
         out.push(r.uint('信息类型', 1, (v) => ({ value: v === 0 ? '正常报警文件信息' : v === 1 ? '补传报警文件信息' : `未知 (${v})` })));
         const cnt = r.uint('附件数量', 1, (v) => ({ value: `${v} 个` }));

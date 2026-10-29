@@ -126,7 +126,7 @@ function parseOne(r: Reader, f: SpecField, ctx: RunCtx): Field[] {
         return [group(r.buf, f.name, start, inner, summary, 'body', [`位置信息结构同 0x0200 消息体，共 ${n} 字节`, ...descStep])];
       }
     case 'alarmId':
-      return [parseAlarmIdentifier(r, ctx.version === '2019' ? 30 : 7)];
+      return [parseAlarmIdentifier(r, ctx.version, false, ctx.version === '2019' ? 30 : 7)];
     case 'params':{
         const start = r.pos;
         const items = parseParams(r, ctx.values[f.countRef] ?? 0);
