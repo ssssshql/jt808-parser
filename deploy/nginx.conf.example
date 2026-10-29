@@ -1,0 +1,53 @@
+# JT808 报文解析器 - nginx 配置示例
+#
+# 本项目产物使用 相对资源路径 + HashRouter，可部署在任意目录：
+#   root: /var/www/jt808-parser           → https://your-domain.com/
+#   root: /var/www/jt808-parser           → https://your-domain.com/jt808/  (配合下面的子路径示例)
+#
+# 用法：
+#   cp deploy/nginx.conf.example /etc/nginx/conf.d/jt808-parser.conf
+#   vi /etc/nginx/conf.d/jt808-parser.conf   # 改 server_name 和 root
+#   nginx -t && nginx -s reload
+
+server {
+    listen       80;
+    server_name  your-domain.com;          # 换成你的域名或 IP
+
+    root   /var/www/jt808-parser;
+    index  index.html;
+
+    location / {
+        # hash 路由不会产生真实子路径，这里只做常规兜底
+        try_files $uri $uri/ /index.html;
+    }
+
+    # 带 hash 的静态资源可长期缓存
+    location /assets/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # index.html 不缓存，保证发版后立即生效
+    location = /index.html {
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+    }
+
+    gzip on;
+    gzip_comp_level 6;
+    gzip_min_length 1024;
+    gzip_types text/plain text/css application/javascript application/json image/svg+xml;
+
+    autoindex off;
+}
+
+# ---------------------------------------------------------------
+# 子路径部署示例（把同一份 dist 放到 /jt808/ 下）：
+#
+#   location /jt808/ {
+#       alias /var/www/jt808-parser/;
+#       try_files $uri $uri/ /jt808/index.html;
+#   }
+#
+# 因为产物使用相对路径 + hash 路由，同一份 dist 可直接复用，
+# 无需用 --base 重新构建。
+# ---------------------------------------------------------------
