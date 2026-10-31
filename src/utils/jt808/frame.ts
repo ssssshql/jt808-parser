@@ -5,7 +5,12 @@ import { cleanHex, hex2, hexN, hexToBytes, xorRange } from './hex';
 import { parseBody } from './messages';
 import { Reader, bitsFrom, errorField, group, makeField, resetFieldIds, timeProblem } from './reader';
 
-export function parseFrame(input: string, mode: VersionMode): ParseOutcome {
+export interface ParseOptions {
+  /** 由多少个分包合并而成（见 multi.ts），用于调整长度校验提示 */
+  mergedFrom?: number;
+}
+
+export function parseFrame(input: string, mode: VersionMode, opts: ParseOptions = {}): ParseOutcome {
   const clean = cleanHex(input);
   if (!clean) return { ok: false, error: '请输入或粘贴一条十六进制 JT808 报文' };
   if (clean.length % 2) return { ok: false, error: `十六进制字符数为 ${clean.length}，不是偶数，请检查是否缺失字符` };
@@ -25,7 +30,7 @@ export function parseFrame(input: string, mode: VersionMode): ParseOutcome {
   }
 
   const inner = content.indexOf(0x7e);
-  if (inner >= 0) return { ok: false, error: `第 ${inner + 2} 字节处出现未转义的 0x7E，输入可能包含多条报文` };
+  if (inner >= 0) return { ok: false, error: `第 ${inner + 2} 字节处出现未转义的 0x7E，输入可能包含多条报文（多条报文请用 7E 首尾分隔）` };
 
   const unesc: number[] = [];
   let escapes = 0;
@@ -164,7 +169,8 @@ export function parseFrame(input: string, mode: VersionMode): ParseOutcome {
     warnings.push(`${hexN(msgId, 2)} ${spec.name} 在 JT/T 808-${version} 中未定义（适用版本：${spec.versions.join(' / ')}），仍按已知结构尝试解析`);
   }
 
-  if (bodyLen !== declaredLen) warnings.push(`消息体属性声明长度 ${declaredLen} 字节，实际为 ${bodyLen} 字节`);
+  if (opts.mergedFrom) warnings.push(`由 ${opts.mergedFrom} 个分包合并：沿用第 1 包消息头，消息体为各包按序拼接，校验码已重新计算`);
+  else if (bodyLen !== declaredLen) warnings.push(`消息体属性声明长度 ${declaredLen} 字节，实际为 ${bodyLen} 字节`);
 
   const br = new Reader(bytes, bodyStart, csPos, 'body');
   if (enc !== 0) {

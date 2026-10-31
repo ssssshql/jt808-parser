@@ -6,9 +6,13 @@ import { cleanHex, formatHex } from '../utils/jt808/hex';
 interface InputPanelProps {
   value: string;
   onChange: (value: string) => void;
+  /** 有可导出的解析结果时提供 */
+  onExport?: () => void;
+  /** 输入中的报文条数 */
+  frameCount?: number;
 }
 
-export function InputPanel({ value, onChange }: InputPanelProps) {
+export function InputPanel({ value, onChange, onExport, frameCount = 1 }: InputPanelProps) {
   const chars = cleanHex(value).length;
 
   return (
@@ -45,8 +49,17 @@ export function InputPanel({ value, onChange }: InputPanelProps) {
           
           清空
         </button>
+        {onExport &&
+        <button
+          type="button"
+          onClick={onExport}
+          className="h-8 rounded-full px-3 text-sm font-medium text-primary transition-colors duration-150 hover:bg-primary/[0.08]">
+          
+            导出 JSON
+          </button>
+        }
         <span className="ml-auto text-xs text-on-surface-variant">
-          {chars ? `${Math.floor(chars / 2)} 字节 · 实时解析` : '支持空格、0x 前缀等格式'}
+          {chars ? `${Math.floor(chars / 2)} 字节${frameCount > 1 ? ` · ${frameCount} 条报文` : ''} · 实时解析` : '支持空格、0x 前缀、多条报文'}
         </span>
       </div>
     </section>);
