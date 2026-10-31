@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { SECTION_STYLES } from '../data/sections';
 import { hex4 } from '../utils/jt808/hex';
 import type { Field } from '../types/jt808';
@@ -37,7 +37,7 @@ export function FieldDialog({ field, onClose }: FieldDialogProps) {
   return (
     <AnimatePresence>
       {field &&
-      <motion.div
+      <m.div
         className="fixed inset-0 z-50 flex items-center justify-center p-4"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -45,7 +45,7 @@ export function FieldDialog({ field, onClose }: FieldDialogProps) {
         transition={{ duration: 0.15 }}>
         
           <div className="absolute inset-0 bg-black/40" onClick={onClose} aria-hidden />
-          <motion.div
+          <m.div
           role="dialog"
           aria-modal="true"
           aria-labelledby="field-dialog-title"
@@ -161,8 +161,8 @@ export function FieldDialog({ field, onClose }: FieldDialogProps) {
                 关闭
               </button>
             </div>
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       }
     </AnimatePresence>);
 

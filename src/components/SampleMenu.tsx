@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { ChevronDownIcon, FileTextIcon } from 'lucide-react';
 import { samples } from '../data/samples';
 import { hexN } from '../utils/jt808/hex';
@@ -44,7 +44,7 @@ export function SampleMenu({ onPick }: SampleMenuProps) {
       </button>
       <AnimatePresence>
         {open &&
-        <motion.div
+        <m.div
           role="menu"
           initial={{ opacity: 0, scale: 0.96, y: -4 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -72,7 +72,7 @@ export function SampleMenu({ onPick }: SampleMenuProps) {
                 <span className="shrink-0 rounded px-1.5 py-0.5 text-[11px] text-on-surface-variant bg-surface-container-highest">{s.version}</span>
               </button>
           )}
-          </motion.div>
+          </m.div>
         }
       </AnimatePresence>
     </div>);
