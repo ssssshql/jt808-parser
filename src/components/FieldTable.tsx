@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronRightIcon, ChevronsDownUpIcon, ChevronsUpDownIcon } from 'lucide-react';
 import { SECTION_STYLES } from '../data/sections';
 import { collectGroupIds, findAncestors, flattenLeaves } from '../utils/jt808/fields';

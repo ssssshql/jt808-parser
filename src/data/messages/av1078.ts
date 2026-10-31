@@ -27,9 +27,9 @@ u16('服务器音视频通道监听端口号（UDP）', { example: 0 })];
 
 const ALARM_FLAG = bytes('报警标志', 8, { desc: 'bit0–31 为 JT/T 808 报警标志，bit32–63 为 JT/T 1078 视频报警标志；全 0 表示不以报警为检索条件' });
 
-const ptz = (id: number, name: string, field: SpecField, desc: string): MessageSpec => ({
+const ptz = (id: number, name: string, field: SpecField | SpecField[], desc: string): MessageSpec => ({
   ...base, id, name, direction: 'down', replies: [0x0001], desc,
-  fields: [u8('逻辑通道号', { example: 1 }), field]
+  fields: [u8('逻辑通道号', { example: 1 }), ...(Array.isArray(field) ? field : [field])]
 });
 
 export const av1078Specs: MessageSpec[] = [
@@ -179,7 +179,9 @@ export const av1078Specs: MessageSpec[] = [
   desc: '平台暂停、继续或取消正在进行的文件上传。',
   fields: [u16('应答流水号', { desc: '对应文件上传指令的流水号' }), u8('上传控制', { enum: { 0: '暂停', 1: '继续', 2: '取消' } })]
 },
-ptz(0x9301, '云台旋转', u8('方向', { enum: { 0: '停止', 1: '上', 2: '下', 3: '左', 4: '右' } }), '平台控制云台向指定方向旋转。'),
+ptz(0x9301, '云台旋转', [
+u8('方向', { enum: { 0: '停止', 1: '上', 2: '下', 3: '左', 4: '右' } }),
+u8('速度', { desc: '0–255', example: 128 })], '平台控制云台向指定方向旋转。'),
 ptz(0x9302, '云台调整焦距控制', u8('焦距调整方向', { enum: { 0: '焦距调大', 1: '焦距调小' } }), '平台调整云台摄像头焦距。'),
 ptz(0x9303, '云台调整光圈控制', u8('光圈调整方式', { enum: BIG_SMALL }), '平台调整云台摄像头光圈。'),
 ptz(0x9304, '云台雨刷控制', u8('启停标识', { enum: START_STOP }), '平台控制云台雨刷启停。'),

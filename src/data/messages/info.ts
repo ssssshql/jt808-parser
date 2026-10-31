@@ -9,6 +9,7 @@ export const infoSpecs: MessageSpec[] = [
   desc: '平台向终端下发文本信息，可指定显示、TTS 播读等方式。2019 版增加文本类型。',
   fields: [
   u8('标志', {
+    versions: BEFORE_2019,
     bits: [
     { bit: 0, name: '紧急' },
     { bit: 2, name: '终端显示器显示' },
@@ -17,6 +18,17 @@ export const infoSpecs: MessageSpec[] = [
     { bit: 5, name: '信息类型', render: (v) => v ? 'CAN 故障码信息' : '中心导航信息' }],
 
     example: 12
+  }),
+  u8('标志', {
+    versions: ONLY_2019,
+    desc: '2019 版 bit0–1 为文本信息等级，bit4 保留',
+    bits: [
+    { bit: 0, width: 2, name: '文本等级', render: (v) => ({ 1: '服务', 2: '紧急', 3: '通知' } as Record<number, string>)[v] ?? '保留' },
+    { bit: 2, name: '终端显示器显示' },
+    { bit: 3, name: '终端 TTS 播读' },
+    { bit: 5, name: '信息类型', render: (v) => v ? 'CAN 故障码信息' : '中心导航信息' }],
+
+    example: 13
   }),
   u8('文本类型', { versions: ONLY_2019, enum: { 1: '通知', 2: '服务' } }),
   str('文本信息', 'rest', { enc: 'gbk', example: 'Hello', desc: '最长 1024 字节' })]

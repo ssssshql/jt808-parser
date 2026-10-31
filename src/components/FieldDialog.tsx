@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { SECTION_STYLES } from '../data/sections';
 import { hex4 } from '../utils/jt808/hex';

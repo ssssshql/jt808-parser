@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { DocHeader } from './DocHeader';
 import { DocSection } from './DocSection';
 import { SpecTable } from './SpecTable';

@@ -1,6 +1,6 @@
 import type { Field, ProtocolVersion, Section } from '../../types/jt808';
 import {
-  AREA_TYPES, EXTRA_NAMES, EXTRA_SINCE, EXT_SIGNAL_DEFS, IO_DEFS, SAFETY_EXTRA_IDS, alarmDefs, heading, statusDefs } from
+  ABNORMAL_DRIVING_DEFS, AREA_TYPES, EXTRA_NAMES, VIDEO_ALARM_DEFS, EXTRA_SINCE, EXT_SIGNAL_DEFS, IO_DEFS, SAFETY_EXTRA_IDS, alarmDefs, heading, statusDefs } from
 './dictionaries';
 import { hexN } from './hex';
 import { Reader, bitsFrom, errorField, group, type Interpretation } from './reader';
@@ -174,6 +174,40 @@ function parseExtraContent(r: Reader, id: number, len: number, version: Protocol
         const ad1 = Math.floor(v / 65536);
         return { value: `AD0 ${ad0} · AD1 ${ad1}`, steps: [`bit0–15 → AD0 = ${ad0}`, `bit16–31 → AD1 = ${ad1}`] };
       }));
+    case 0x14:
+      return push(r.uint('视频相关报警', 4, (v) => {
+        const bits = bitsFrom(v, VIDEO_ALARM_DEFS);
+        const on = bits.filter((b) => b.active).map((b) => b.name);
+        return { value: on.length ? on.join('、') : '无报警', bits };
+      }));
+    case 0x15:
+    case 0x16:{
+        const label = id === 0x15 ? '视频信号丢失' : '视频信号遮挡';
+        return push(r.uint(`${label}报警状态`, 4, (v) => {
+          const ch: number[] = [];
+          for (let i = 0; i < 32; i++) if (Math.floor(v / 2 ** i) % 2) ch.push(i + 1);
+          return { value: ch.length ? `通道 ${ch.join('、')}` : '无', steps: ['bit0–31 依次对应逻辑通道 1–32，置 1 表示该通道发生报警'] };
+        }));
+      }
+    case 0x17:
+      return push(r.uint('存储器故障报警状态', 2, (v) => {
+        const main: number[] = [];
+        const backup: number[] = [];
+        for (let i = 0; i < 12; i++) if (v >> i & 1) main.push(i + 1);
+        for (let i = 12; i < 16; i++) if (v >> i & 1) backup.push(i - 11);
+        const parts = [main.length ? `主存储器 ${main.join('、')}` : '', backup.length ? `灾备存储器 ${backup.join('、')}` : ''].filter(Boolean);
+        return { value: parts.length ? parts.join('；') : '无故障', steps: ['bit0–11 对应主存储器 1–12，bit12–15 对应灾备存储器 1–4'] };
+      }));
+    case 0x18:{
+        const t = r.uint('异常驾驶行为类型', 2, (v) => {
+          const bits = bitsFrom(v, ABNORMAL_DRIVING_DEFS);
+          const on = bits.filter((b) => b.active).map((b) => b.name);
+          return { value: on.length ? on.join('、') : '无', bits };
+        });
+        out.push(t);
+        if (r.remaining >= 1) out.push(r.uint('疲劳程度', 1, (v) => ({ value: `${v}`, steps: ['范围 0–100，越大越疲劳'] })));
+        return t.value;
+      }
     case 0x30:
       return push(r.uint('信号强度', 1));
     case 0x31:

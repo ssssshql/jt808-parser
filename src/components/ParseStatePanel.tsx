@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { CircleAlertIcon, InboxIcon } from 'lucide-react';
 
 interface ParseStatePanelProps {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ArrowRightIcon } from 'lucide-react';
 import { DOC_REFERENCES } from '../../data/docReferences';
 import type { DocRefKey } from '../../types/messageSpec';

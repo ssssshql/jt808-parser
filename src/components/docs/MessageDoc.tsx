@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ArrowDownIcon, ArrowUpIcon, PlayIcon, TriangleAlertIcon } from 'lucide-react';
 import { DocHeader } from './DocHeader';
 import { DocSection } from './DocSection';

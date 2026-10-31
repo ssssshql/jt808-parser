@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { CheckIcon } from 'lucide-react';
 
 interface VersionSegmentedProps<T extends string> {

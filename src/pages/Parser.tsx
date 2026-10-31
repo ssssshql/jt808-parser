@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { TopAppBar } from '../components/TopAppBar';
 import { VersionSegmented } from '../components/VersionSegmented';
 import { InputPanel } from '../components/InputPanel';
