@@ -1,7 +1,7 @@
 import type { MessageSpec } from '../../types/messageSpec';
 import { hexN } from '../../utils/jt808/hex';
 import {
-  ALL_VERSIONS, ONLY_2019, bcd, bytes, bytesBy, list, location, str, strBy, time, u16, u32, u8 } from
+  ALL_VERSIONS, ONLY_2011, ONLY_2019, SINCE_2013, bcd, bytes, bytesBy, list, location, str, strBy, time, u16, u32, u8 } from
 '../../utils/jt808/specHelpers';
 
 const RECORDER_CMDS = {
@@ -68,21 +68,29 @@ export const recorderSpecs: MessageSpec[] = [
 },
 {
   ...rec, id: 0x0702, name: '驾驶员身份信息采集上报', direction: 'up', versions: ALL_VERSIONS, replies: [0x8001],
-  desc: '驾驶员插拔从业资格证 IC 卡时上报身份信息。2019 版增加驾驶员身份证号。',
+  desc: '驾驶员插拔从业资格证 IC 卡时上报身份信息。2013 版增加状态、时间与读卡结果，2019 版增加驾驶员身份证号。',
   fields: [
-  u8('状态', { enum: { 1: '从业资格证 IC 卡插入（上班）', 2: '从业资格证 IC 卡拔出（下班）' } }),
-  time('时间', { desc: '插卡/拔卡时间，YY-MM-DD-hh-mm-ss' }),
+  // 2011 版：无状态 / 时间 / 读卡结果，字段顺序不同
+  u8('驾驶员姓名长度', { versions: ONLY_2011 }),
+  strBy('驾驶员姓名', '驾驶员姓名长度', { versions: ONLY_2011, enc: 'gbk', example: 'Zhang San' }),
+  str('驾驶员身份证编码', 20, { versions: ONLY_2011, example: '440300198801010000' }),
+  str('从业资格证编码', 40, { versions: ONLY_2011, example: '440300198801010000' }),
+  u8('发证机构名称长度', { versions: ONLY_2011 }),
+  strBy('发证机构名称', '发证机构名称长度', { versions: ONLY_2011, enc: 'gbk', example: 'GD' }),
+  u8('状态', { versions: SINCE_2013, enum: { 1: '从业资格证 IC 卡插入（上班）', 2: '从业资格证 IC 卡拔出（下班）' } }),
+  time('时间', { versions: SINCE_2013, desc: '插卡/拔卡时间，YY-MM-DD-hh-mm-ss' }),
   u8('IC 卡读取结果', {
+    versions: SINCE_2013,
     when: (c) => c.values['状态'] === 1,
     whenText: '状态 = 1',
     enum: { 0: '读卡成功', 1: '读卡失败：卡片密钥认证未通过', 2: '读卡失败：卡片已被锁定', 3: '读卡失败：卡片被拔出', 4: '读卡失败：数据校验错误' }
   }),
-  u8('驾驶员姓名长度', { when: ok0702, whenText: okText }),
-  strBy('驾驶员姓名', '驾驶员姓名长度', { enc: 'gbk', when: ok0702, whenText: okText, example: 'Zhang San' }),
-  str('从业资格证编码', 20, { when: ok0702, whenText: okText, example: '440300198801010000' }),
-  u8('发证机构名称长度', { when: ok0702, whenText: okText }),
-  strBy('发证机构名称', '发证机构名称长度', { enc: 'gbk', when: ok0702, whenText: okText, example: 'GD' }),
-  bcd('证件有效期', 4, { when: ok0702, whenText: okText, desc: 'YYYYMMDD', example: '20301231' }),
+  u8('驾驶员姓名长度', { versions: SINCE_2013, when: ok0702, whenText: okText }),
+  strBy('驾驶员姓名', '驾驶员姓名长度', { versions: SINCE_2013, enc: 'gbk', when: ok0702, whenText: okText, example: 'Zhang San' }),
+  str('从业资格证编码', 20, { versions: SINCE_2013, when: ok0702, whenText: okText, example: '440300198801010000' }),
+  u8('发证机构名称长度', { versions: SINCE_2013, when: ok0702, whenText: okText }),
+  strBy('发证机构名称', '发证机构名称长度', { versions: SINCE_2013, enc: 'gbk', when: ok0702, whenText: okText, example: 'GD' }),
+  bcd('证件有效期', 4, { versions: SINCE_2013, when: ok0702, whenText: okText, desc: 'YYYYMMDD', example: '20301231' }),
   str('驾驶员身份证号', 20, { versions: ONLY_2019, when: ok0702, whenText: okText, example: '440300198801010000' })]
 
 },

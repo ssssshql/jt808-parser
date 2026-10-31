@@ -6,6 +6,8 @@ import type {
 export const ALL_VERSIONS: ProtocolVersion[] = ['2011', '2013', '2019'];
 export const ONLY_2019: ProtocolVersion[] = ['2019'];
 export const BEFORE_2019: ProtocolVersion[] = ['2011', '2013'];
+export const ONLY_2011: ProtocolVersion[] = ['2011'];
+export const SINCE_2013: ProtocolVersion[] = ['2013', '2019'];
 
 type UintOpts = Partial<Omit<UintSpec, 'kind' | 'name' | 'size'>>;
 type BcdOpts = Partial<Omit<BcdSpec, 'kind' | 'name' | 'size'>>;

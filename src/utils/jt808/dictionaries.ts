@@ -146,6 +146,11 @@ export const EXTRA_NAMES: Record<number, string> = {
   0x2b: '模拟量',
   0x30: '网络信号强度',
   0x31: 'GNSS 卫星数',
+  0x14: '视频相关报警（JT/T 1078）',
+  0x15: '视频信号丢失报警状态（JT/T 1078）',
+  0x16: '视频信号遮挡报警状态（JT/T 1078）',
+  0x17: '存储器故障报警状态（JT/T 1078）',
+  0x18: '异常驾驶行为报警（JT/T 1078）',
   0x64: 'ADAS 高级驾驶辅助报警',
   0x65: 'DSM 驾驶员状态监测报警',
   0x66: 'TPMS 胎压监测报警',
@@ -227,6 +232,15 @@ export const FILE_TYPES: Record<SafetyStandard, string[]> = {
   su: ['图片', '音频', '视频', '文本', '其它'],
   yue: ['全景图片', '音频', '视频', '文本', '面部特征图片', '其它']
 };
+/** JT/T 1078 表 14：0x14 视频相关报警 */
+export const VIDEO_ALARM_DEFS: BitDef[] = [
+'视频信号丢失报警', '视频信号遮挡报警', '存储单元故障报警', '其他视频设备故障报警', '客车超员报警', '异常驾驶行为报警', '特殊报警录像达到存储阈值报警'].
+map((name, bit) => ({ bit, name }));
+
+/** JT/T 1078 表 15：0x18 异常驾驶行为类型 */
+export const ABNORMAL_DRIVING_DEFS: BitDef[] = [
+{ bit: 0, name: '疲劳' }, { bit: 1, name: '打电话' }, { bit: 2, name: '抽烟' }];
+
 export const AREA_TYPES = ['无特定位置', '圆形区域', '矩形区域', '多边形区域', '路段'];
 
 export function heading(v: number): string {
