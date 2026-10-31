@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { DocHeader } from './DocHeader';
 import { DocSection } from './DocSection';
 import { alarmDefs, statusDefs } from '../../utils/jt808/dictionaries';

@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { MotionConfig } from 'framer-motion';
 import { ParserProvider } from './contexts/ParserContext';

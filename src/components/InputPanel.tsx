@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { SampleMenu } from './SampleMenu';
 import { buildSampleFrame } from '../utils/jt808/build';
 import { cleanHex, formatHex } from '../utils/jt808/hex';

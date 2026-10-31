@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { ArrowRightIcon } from 'lucide-react';
 import { DocHeader } from './DocHeader';
 import { DocSection } from './DocSection';

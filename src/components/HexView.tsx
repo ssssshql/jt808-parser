@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { SECTION_ORDER, SECTION_STYLES } from '../data/sections';
 import { hex2, hex4 } from '../utils/jt808/hex';
 import type { Field, Section } from '../types/jt808';
