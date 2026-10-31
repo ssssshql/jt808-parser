@@ -1,9 +1,9 @@
 import type { Field, ParseOutcome, ProtocolVersion, VersionMode } from '../../types/jt808';
-import { MSG_NAMES } from '../../data/messages';
+import { MSG_NAMES, SPEC_BY_ID } from '../../data/messages';
 import { PROPS_DEFS } from './dictionaries';
 import { cleanHex, hex2, hexN, hexToBytes, xorRange } from './hex';
 import { parseBody } from './messages';
-import { Reader, bitsFrom, errorField, group, makeField, resetFieldIds } from './reader';
+import { Reader, bitsFrom, errorField, group, makeField, resetFieldIds, timeProblem } from './reader';
 
 export function parseFrame(input: string, mode: VersionMode): ParseOutcome {
   const clean = cleanHex(input);
@@ -140,6 +140,14 @@ export function parseFrame(input: string, mode: VersionMode): ParseOutcome {
     } else if (msgId === 0x0100) {
       version = bodyLen < 37 ? '2011' : '2013';
       versionNote = '依据终端注册消息体长度推断';
+    } else if (msgId === 0x0702 || msgId === 0x0801) {
+      const at = msgId === 0x0702 ? 1 : 8 + 22;
+      const statusOk = msgId !== 0x0702 || bytes[bodyStart] === 1 || bytes[bodyStart] === 2;
+      const hasTime = bodyLen >= at + 6 && statusOk && isValidTime(bytes, bodyStart + at);
+      version = hasTime ? '2013' : '2011';
+      versionNote = msgId === 0x0702 ?
+      `依据首字节是否为插/拔卡状态且后跟合法 BCD 时间推断为 ${version}` :
+      `依据通道 ID 后是否为合法的 28 字节位置基本信息推断为 ${version}`;
     } else {
       version = '2013';
       versionNote = '版本标识为 0，按 2013 解析（兼容 2011）';
@@ -151,11 +159,16 @@ export function parseFrame(input: string, mode: VersionMode): ParseOutcome {
     if (mode !== '2019' && flag) warnings.push('报文设置了 2019 版本标识，消息头按 2019 结构解析');
   }
 
+  const spec = SPEC_BY_ID[msgId];
+  if (spec && !spec.versions.includes(version)) {
+    warnings.push(`${hexN(msgId, 2)} ${spec.name} 在 JT/T 808-${version} 中未定义（适用版本：${spec.versions.join(' / ')}），仍按已知结构尝试解析`);
+  }
+
   if (bodyLen !== declaredLen) warnings.push(`消息体属性声明长度 ${declaredLen} 字节，实际为 ${bodyLen} 字节`);
 
   const br = new Reader(bytes, bodyStart, csPos, 'body');
   if (enc !== 0) {
-    fields.push(br.bytes('加密消息体', br.remaining, 'RSA 加密数据，无法直接解析'));
+    fields.push(br.bytes('加密消息体', br.remaining, enc === 1 ? 'RSA 加密数据，无法直接解析' : `加密方式 ${enc} 为保留值，按原始字节显示`));
   } else if (subpackage && pktIdx > 1) {
     fields.push(br.bytes('分包数据', br.remaining, '后续分包数据，需与首包拼接后解析'));
   } else {
@@ -215,4 +228,9 @@ export function parseFrame(input: string, mode: VersionMode): ParseOutcome {
       rawBytes: raw.length
     }
   };
+}
+function isValidTime(buf: Uint8Array, at: number): boolean {
+  let d = '';
+  for (let i = 0; i < 6; i++) d += buf[at + i].toString(16).padStart(2, '0');
+  return d !== '000000000000' && timeProblem(d) === null;
 }

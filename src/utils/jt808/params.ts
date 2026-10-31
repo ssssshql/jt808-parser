@@ -1,6 +1,7 @@
 import type { Field } from '../../types/jt808';
 import { TERMINAL_PARAMS, type TerminalParam } from '../../data/terminalParams';
 import { hexN } from './hex';
+import { parse1078Param } from './params1078';
 import { Reader, group } from './reader';
 
 const PARAM_BY_ID: Record<number, TerminalParam> = Object.fromEntries(TERMINAL_PARAMS.map((p) => [p.id, p]));
@@ -19,7 +20,11 @@ export function parseParams(r: Reader, count: number): Field[] {
     const len = lenF.num ?? 0;
     let valF: Field;
     const size = def ? SIZES[def.type] : undefined;
-    if (def && size && size === len) {
+    const id = idF.num ?? 0;
+    const structured = id >= 0x0075 && id <= 0x007c ? try1078(r, id, len) : null;
+    if (structured) {
+      valF = structured;
+    } else if (def && size && size === len) {
       valF = r.uint('参数值', size, (v) => ({ value: def.unit ? `${v} ${def.unit}` : String(v), steps: [`参数类型 ${def.type}`] }));
     } else if (def?.type === 'STRING') {
       valF = r.str('参数值', len, 'gbk');
@@ -29,4 +34,20 @@ export function parseParams(r: Reader, count: number): Field[] {
     items.push(group(r.buf, `${hexN(idF.num ?? 0, 2)} ${def?.name ?? '未定义参数'}`, s, [idF, lenF, valF], valF.value, r.section));
   }
   return items;
+}
+function try1078(r: Reader, id: number, len: number): Field | null {
+  if (r.remaining < len) return null;
+  const start = r.pos;
+  const sub = new Reader(r.buf, start, start + len, r.section);
+  let kids: Field[] | null = null;
+  try {
+    kids = parse1078Param(id, sub);
+  } catch {
+    kids = null;
+  }
+  if (!kids || sub.remaining !== 0) return null;
+  r.pos = start + len;
+  const out = group(r.buf, '参数值', start, kids, `${len} 字节（按 JT/T 1078 结构解析）`, r.section);
+  out.length = len;
+  return out;
 }

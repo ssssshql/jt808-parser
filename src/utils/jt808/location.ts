@@ -54,6 +54,15 @@ export function parseLocation(r: Reader, version: ProtocolVersion, out: Field[])
 }
 
 function parseExtra(r: Reader, version: ProtocolVersion): Field {
+  const prev = r.section;
+  try {
+    return parseExtraInner(r, version);
+  } finally {
+    r.section = prev;
+  }
+}
+
+function parseExtraInner(r: Reader, version: ProtocolVersion): Field {
   const start = r.pos;
   const idv = r.buf[r.pos];
   const section: Section = SAFETY_EXTRA_IDS.includes(idv) ? 'safety' : 'extra';
