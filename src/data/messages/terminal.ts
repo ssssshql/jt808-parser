@@ -3,7 +3,7 @@ import {
   PLATE_COLORS, PLATFORM_RESULT, PROVINCES, REGISTER_RESULT, TERMINAL_RESULT } from
 '../../utils/jt808/dictionaries';
 import {
-  ALL_VERSIONS, BEFORE_2019, ONLY_2019, bcd, bytesBy, list, params, str, strBy, time, u16, u32, u8 } from
+  ALL_VERSIONS, BEFORE_2019, ONLY_2019, SINCE_2013, bcd, bytesBy, list, params, str, strBy, time, u16, u32, u8 } from
 '../../utils/jt808/specHelpers';
 import { PARAM_NAMES } from '../terminalParams';
 
@@ -46,7 +46,7 @@ export const terminalSpecs: MessageSpec[] = [
   fields: []
 },
 {
-  ...base, id: 0x8003, name: '补传分包请求', direction: 'down', versions: ALL_VERSIONS,
+  ...base, id: 0x8003, name: '补传分包请求', direction: 'down', versions: SINCE_2013,
   desc: '平台在接收分包消息时发现缺包，要求终端重传指定分包。',
   fields: [
   u16('原始消息流水号', { desc: '对应要求补传的原始消息第一包的流水号' }),
@@ -140,7 +140,7 @@ export const terminalSpecs: MessageSpec[] = [
 
 },
 {
-  ...base, id: 0x8106, name: '查询指定终端参数', direction: 'down', versions: ALL_VERSIONS, replies: [0x0104],
+  ...base, id: 0x8106, name: '查询指定终端参数', direction: 'down', versions: SINCE_2013, replies: [0x0104],
   desc: '平台查询指定 ID 的终端参数。',
   fields: [
   u8('参数总数'),
@@ -148,12 +148,12 @@ export const terminalSpecs: MessageSpec[] = [
 
 },
 {
-  ...base, id: 0x8107, name: '查询终端属性', direction: 'down', versions: ALL_VERSIONS, replies: [0x0107],
+  ...base, id: 0x8107, name: '查询终端属性', direction: 'down', versions: SINCE_2013, replies: [0x0107],
   desc: '平台查询终端属性，消息体为空。',
   fields: []
 },
 {
-  ...base, id: 0x0107, name: '查询终端属性应答', direction: 'up', versions: ALL_VERSIONS,
+  ...base, id: 0x0107, name: '查询终端属性应答', direction: 'up', versions: SINCE_2013,
   desc: '终端返回终端类型、制造商、型号、SIM 卡、软硬件版本和通信模块属性。',
   fields: [
   u16('终端类型', {
@@ -199,7 +199,7 @@ export const terminalSpecs: MessageSpec[] = [
 
 },
 {
-  ...base, id: 0x8108, name: '下发终端升级包', direction: 'down', versions: ALL_VERSIONS, replies: [0x0001, 0x0108],
+  ...base, id: 0x8108, name: '下发终端升级包', direction: 'down', versions: SINCE_2013, replies: [0x0001, 0x0108],
   desc: '平台向终端下发升级数据包，通常采用分包传输。',
   fields: [
   u8('升级类型', { enum: UPGRADE_TYPES }),
@@ -211,7 +211,7 @@ export const terminalSpecs: MessageSpec[] = [
 
 },
 {
-  ...base, id: 0x0108, name: '终端升级结果通知', direction: 'up', versions: ALL_VERSIONS, replies: [0x8001],
+  ...base, id: 0x0108, name: '终端升级结果通知', direction: 'up', versions: SINCE_2013, replies: [0x8001],
   desc: '终端升级完成并重新连接后，通知平台升级结果。',
   fields: [u8('升级类型', { enum: UPGRADE_TYPES }), u8('升级结果', { enum: ['成功', '失败', '取消'] })]
 }];

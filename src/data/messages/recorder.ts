@@ -95,12 +95,12 @@ export const recorderSpecs: MessageSpec[] = [
 
 },
 {
-  ...rec, id: 0x8702, name: '上报驾驶员身份信息请求', direction: 'down', versions: ALL_VERSIONS, replies: [0x0702],
+  ...rec, id: 0x8702, name: '上报驾驶员身份信息请求', direction: 'down', versions: SINCE_2013, replies: [0x0702],
   desc: '平台请求终端上报当前驾驶员身份信息，消息体为空。',
   fields: []
 },
 {
-  ...rec, id: 0x0705, name: 'CAN 总线数据上传', direction: 'up', versions: ALL_VERSIONS, replies: [0x8001],
+  ...rec, id: 0x0705, name: 'CAN 总线数据上传', direction: 'up', versions: SINCE_2013, replies: [0x8001],
   desc: '终端上传采集到的 CAN 总线数据。',
   fields: [
   u16('数据项个数'),
@@ -135,14 +135,14 @@ export const mediaSpecs: MessageSpec[] = [
 },
 {
   ...media, id: 0x0801, name: '多媒体数据上传', direction: 'up', versions: ALL_VERSIONS, replies: [0x8800],
-  desc: '终端上传多媒体数据，携带拍摄时刻的位置基本信息。',
+  desc: '终端上传多媒体数据；2013 版起携带拍摄时刻的位置基本信息。',
   fields: [
   u32('多媒体 ID'),
   u8('多媒体类型', { enum: MEDIA_TYPE }),
   u8('多媒体格式编码', { enum: MEDIA_FORMAT }),
   u8('事件项编码', { enum: MEDIA_EVENT }),
   u8('通道 ID'),
-  location('位置基本信息', { basic: true, desc: '0x0200 消息体的前 28 字节' }),
+  location('位置基本信息', { basic: true, versions: SINCE_2013, desc: '0x0200 消息体的前 28 字节（2011 版无此字段）' }),
   bytes('多媒体数据包', 'rest')]
 
 },
@@ -172,7 +172,7 @@ export const mediaSpecs: MessageSpec[] = [
 
 },
 {
-  ...media, id: 0x0805, name: '摄像头立即拍摄命令应答', direction: 'up', versions: ALL_VERSIONS,
+  ...media, id: 0x0805, name: '摄像头立即拍摄命令应答', direction: 'up', versions: SINCE_2013,
   desc: '终端应答立即拍摄命令，成功时返回拍摄得到的多媒体 ID 列表。',
   fields: [
   u16('应答流水号', { desc: '对应拍摄命令的流水号' }),
@@ -230,7 +230,7 @@ export const mediaSpecs: MessageSpec[] = [
 
 },
 {
-  ...media, id: 0x8805, name: '单条存储多媒体数据检索上传命令', direction: 'down', versions: ALL_VERSIONS, replies: [0x0001],
+  ...media, id: 0x8805, name: '单条存储多媒体数据检索上传命令', direction: 'down', versions: SINCE_2013, replies: [0x0001],
   desc: '平台要求终端上传指定 ID 的多媒体数据。',
   fields: [u32('多媒体 ID'), u8('删除标志', { enum: DELETE_FLAG })]
 }];

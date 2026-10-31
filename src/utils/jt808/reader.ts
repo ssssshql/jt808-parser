@@ -46,6 +46,20 @@ export function bitsFrom(value: number, defs: BitDef[]): BitRow[] {
   });
 }
 
+/** 校验 6 字节 BCD 时间（YYMMDDhhmmss），返回问题描述；全 0 视为未设置 */
+export function timeProblem(d: string): string | null {
+  if (!/^\d{12}$/.test(d)) return '包含非十进制 BCD 数字';
+  if (d === '000000000000') return null;
+  const [y, mo, da, h, mi, s] = (d.match(/.{2}/g) ?? []).map(Number);
+  if (mo < 1 || mo > 12) return `月份 ${mo} 超出 1–12`;
+  const dim = new Date(2000 + y, mo, 0).getDate();
+  if (da < 1 || da > dim) return `日期 ${da} 超出该月 1–${dim}`;
+  if (h > 23) return `小时 ${h} 超出 0–23`;
+  if (mi > 59) return `分钟 ${mi} 超出 0–59`;
+  if (s > 59) return `秒 ${s} 超出 0–59`;
+  return null;
+}
+
 export class Reader {
   buf: Uint8Array;
   pos: number;
@@ -138,13 +152,12 @@ export class Reader {
     return this.bcd(name, 6, (d) => {
       const [yy, mm, dd, hh, mi, ss] = d.match(/.{2}/g) ?? [];
       const s = `20${yy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
-      return {
-        value: s,
-        steps: [
-        `按 YY MM DD hh mm ss 切分 → ${yy} | ${mm} | ${dd} | ${hh} | ${mi} | ${ss}`,
-        `年份补全为 20${yy}，时区 GMT+8 → ${s}`]
-
-      };
+      const steps = [
+      `按 YY MM DD hh mm ss 切分 → ${yy} | ${mm} | ${dd} | ${hh} | ${mi} | ${ss}`,
+      `年份补全为 20${yy}，时区 GMT+8 → ${s}`];
+      const problem = timeProblem(d);
+      if (problem) steps.push(`注意：${problem}`);
+      return { value: problem ? `${s}（非法时间）` : s, steps };
     });
   }
 

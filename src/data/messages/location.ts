@@ -1,6 +1,6 @@
 import type { MessageSpec, SpecField } from '../../types/messageSpec';
 import {
-  ALL_VERSIONS, BEFORE_2019, ONLY_2019, bitOf, bytes, list, location, strBy, time, u16, u32, u8 } from
+  ALL_VERSIONS, BEFORE_2019, ONLY_2019, SINCE_2013, bitOf, bytes, list, location, strBy, time, u16, u32, u8 } from
 '../../utils/jt808/specHelpers';
 
 const lat = (name: string) => u32(name, { scale: 1e6, unit: '°' });
@@ -90,7 +90,7 @@ export const locationSpecs: MessageSpec[] = [
 
 },
 {
-  id: 0x8203, name: '人工确认报警消息', direction: 'down', category: '位置与报警', standard: 'JT/T 808', versions: ALL_VERSIONS, replies: [0x0001],
+  id: 0x8203, name: '人工确认报警消息', direction: 'down', category: '位置与报警', standard: 'JT/T 808', versions: SINCE_2013, replies: [0x0001],
   desc: '平台人工确认终端上报的报警，终端收到后清除对应报警标志。',
   fields: [
   u16('报警消息流水号', { desc: '需人工确认的报警消息流水号，为 0 表示该报警类型所有消息' }),
@@ -114,7 +114,7 @@ export const locationSpecs: MessageSpec[] = [
   fields: []
 },
 {
-  id: 0x0704, name: '定位数据批量上传', direction: 'up', category: '位置与报警', standard: 'JT/T 808', versions: ALL_VERSIONS, replies: [0x8001],
+  id: 0x0704, name: '定位数据批量上传', direction: 'up', category: '位置与报警', standard: 'JT/T 808', versions: SINCE_2013, replies: [0x8001],
   desc: '终端批量上传多条位置信息，常用于盲区补报。',
   fields: [
   u16('数据项个数'),
