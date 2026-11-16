@@ -26,13 +26,10 @@ jobs:
 
       - run: npm run build
 
-      - name: Upload dist to server via SFTP
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          port: 2222
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "dist/*"
-          target: "/opt/1panel/www/sites/jt808-parser/index/"
-          strip_components: 1
+      - name: Upload dist to server via SCP
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p 2222 -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+          scp -i ~/.ssh/deploy_key -P 2222 -r dist/* "${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/opt/1panel/www/sites/jt808-parser/index/"
