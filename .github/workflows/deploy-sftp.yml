@@ -26,21 +26,19 @@ jobs:
 
       - run: npm run build
 
-      - name: Debug key and target
+      - name: Debug target values
+        run: |
+          U="${{ secrets.SSH_USERNAME }}"
+          H="${{ secrets.SSH_HOST }}"
+          echo "username length: ${#U} (expect 7 for ssssshql)"
+          echo "username chars: $(echo -n "$U" | sed 's/./& /g')"
+          echo "host length: ${#H} (expect 13 for 158.101.4.164)"
+          echo "host value: $H"
+
+      - name: Upload dist to server via SCP
         run: |
           mkdir -p ~/.ssh
           printf '%s' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          echo "--- key fingerprint (expect SHA256:Vma8tiZlJiq4CgCQBI4OkITWPcQOVXIuHdv/LfHQvfM) ---"
-          ssh-keygen -lf ~/.ssh/deploy_key || echo "KEY PARSE FAILED"
-          echo "--- key line count ---"
-          wc -l ~/.ssh/deploy_key
-          echo "--- key first line ---"
-          head -1 ~/.ssh/deploy_key
-          echo "--- target ---"
-          echo "user=[${{ secrets.SSH_USERNAME }}] host=[${{ secrets.SSH_HOST }}] port=2222"
-
-      - name: Upload dist to server via SCP
-        run: |
           ssh-keyscan -p 2222 -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
           scp -i ~/.ssh/deploy_key -P 2222 -r dist/* "${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/opt/1panel/www/sites/jt808-parser/index/"
