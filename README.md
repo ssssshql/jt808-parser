@@ -53,7 +53,7 @@ npm run build
 
 | Secret | 值 | 说明 |
 | --- | --- | --- |
-| `FTP_SERVER` | `158.101.4.164` | FTP 主机 |
+| `FTP_SERVER` | `your-server-ip` | FTP 主机 |
 | `FTP_USERNAME` | FTP 账号 | |
 | `FTP_PASSWORD` | FTP 密码 | |
 | `FTP_SERVER_DIR` | `/www/wwwroot/jt808/` | 站点根目录，不填默认为 `/` |
